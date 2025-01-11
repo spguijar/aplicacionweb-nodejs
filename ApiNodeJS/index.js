@@ -15,14 +15,25 @@ const port = process.env.PORT;
 const serviciosRoute = require('./routes/servicios.route');
 const empresaRoute = require('./routes/empresa.route');
 const clienteRoute = require('./routes/cliente.route');
-// Configuración de CORS
-const corsOptions = {
-    origin: 'http://localhost:4200', // Dominio permitido
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-    allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
-};
 
-app.use(cors(corsOptions));
+
+const allowedOrigins = [
+    'http://localhost:4200', // Desarrollo local
+    'https://reformasentumano.onrender.com' // Producción
+];
+
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        credentials: true, // Si usas cookies o autenticación basada en sesión
+    })
+);
 
 
 app.use(express.json());
