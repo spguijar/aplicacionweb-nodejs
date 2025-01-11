@@ -8,6 +8,7 @@ dotenv.config();
 exports.registrarUsuario = async (req, res) => {
     const { nombre, contraseña, email, direccion, provincia } = req.body;
     //Encriptamos la contraseña
+    console.log(nombre, contraseña, email, direccion, provincia);
     const hashedContraseña = await bcrypt.hash(contraseña, 10);
 
     try {
@@ -33,7 +34,6 @@ exports.login = async (req, res) => {
                 email: email
             }
         })
-        console.log(cliente)
         if (await cliente) {
 
             //Comparamos las contraseñas
@@ -90,13 +90,32 @@ exports.getClienteandServicios = async (req, res) => {
 exports.crearClienteandServicios = async (req, res) => {
     const { id_cliente, id_servicio_empresa, preciocontrat } = req.body;
     try {
-        console.log(id_cliente, id_servicio_empresa, preciocontrat)
-        const Clientes_Servicios_Empresas = await Clientes_Servicios_Empresa.create({
-            id_cliente: id_cliente,
-            id_servicio_empresa: id_servicio_empresa,
-            preciocontrat: preciocontrat
-        })
-        res.status(200).send({ message: 'Creación de un registro en Clientes_Servicios_Empresas con éxito' });
+        // Buscamos si ya existe un registro con el id_cliente e  id_servicio_empresa
+        const registroExistente = await Clientes_Servicios_Empresa.findOne({
+            where: {
+                id_cliente: id_cliente,
+                id_servicio_empresa: id_servicio_empresa,
+            },
+        });
+        if (registroExistente) {
+            // Si ya existe, suma el valor nuevo al valor existente
+            const nuevoPreciocontrat = parseFloat(registroExistente.preciocontrat) + parseFloat(preciocontrat);
+
+            // Actualiza el valor de preciocontrat
+            await registroExistente.update({ preciocontrat: nuevoPreciocontrat });
+
+            res.status(200).send({
+                message: 'Registro existente actualizado con éxito'
+            });
+        } else {
+            console.log(id_cliente, id_servicio_empresa, preciocontrat)
+            const nuevoRegistro = await Clientes_Servicios_Empresa.create({
+                id_cliente: id_cliente,
+                id_servicio_empresa: id_servicio_empresa,
+                preciocontrat: preciocontrat
+            })
+            res.status(201).send({ message: 'Creación de un registro en Clientes_Servicios_Empresas con éxito' });
+        }
     } catch (error) {
         res.status(500).send({ error: 'Error al registrar Clientes_Servicios_Empresas', 'error': error.message });
     }
@@ -112,11 +131,15 @@ exports.eliminarClienteandServicios = async (req, res) => {
     })
         .then((rowsDeleted) => {
             if (rowsDeleted > 0) {
-                return res.status(200).send(`Eliminado el servicio del cliente ${id_cliente} ${id_servicio_empresa}`)
+                return res.status(200).send({ message: `Eliminado el servicio del cliente ${id_cliente} ${id_servicio_empresa}` });
+            } else {
+                return res.status(404).send({ error: `No se encontró ningún registro que coincidiera con la condición: id_cliente=${id_cliente}, id_servicio_empresa=${id_servicio_empresa}` });
             }
-            else { return res.status(201).send(`No se encontró ningún registro que coincidiera con la condición ${id_cliente} ${id_servicio_empresa}`) }
         })
         .catch(error => {
-            res.status(201).send('Error al eliminar los registros:', error);
-        });
+            return res.status(500).json({
+                message: 'Error al eliminar los registros.',
+                error: error.message, // Envía un mensaje de error específico
+            });
+        })
 }

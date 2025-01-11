@@ -8,14 +8,32 @@ const basename = path.basename(__filename);
 const dbConfig = require("../config/config.js");
 const db = {};
 
-const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, {
-  host: dbConfig.host,
-  dialect: 'postgres',
-  define: {
-    timestamps: false
-  },
-  logging: console.log
-})
+
+const sequelize = new Sequelize(
+  dbConfig.url_bbdd,
+  {
+    dialect: 'postgres',
+    define: {
+      timestamps: false
+    },
+    dialectOptions: {
+      ssl: {
+        require: true, // Render requiere SSL
+        rejectUnauthorized: false, // Deshabilita la validación del certificado
+      },
+    },
+    logging: console.log, // Opcional: para depurar
+  }
+);
+
+// const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, {
+//   host: dbConfig.host,
+//   dialect: 'postgres',
+//   define: {
+//     timestamps: false
+//   },
+//   logging: console.log
+// })
 
 
 
