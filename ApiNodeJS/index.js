@@ -15,9 +15,16 @@ const port = process.env.PORT;
 const serviciosRoute = require('./routes/servicios.route');
 const empresaRoute = require('./routes/empresa.route');
 const clienteRoute = require('./routes/cliente.route');
+// Configuración de CORS
+const corsOptions = {
+    origin: 'http://localhost:4200', // Dominio permitido
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+};
+
+app.use(cors(corsOptions));
 
 
-app.use(cors())
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
