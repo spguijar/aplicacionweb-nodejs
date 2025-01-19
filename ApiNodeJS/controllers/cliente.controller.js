@@ -88,7 +88,9 @@ exports.getClienteandServicios = async (req, res) => {
     }
 }
 exports.crearClienteandServicios = async (req, res) => {
-    const { id_cliente, id_servicio_empresa, preciocontrat } = req.body;
+    const { id_cliente, id_servicio_empresa, preciocontrat, nuevoComentario } = req.body;
+    console.log(id_cliente, id_servicio_empresa, nuevoComentario);
+
     try {
         // Buscamos si ya existe un registro con el id_cliente e  id_servicio_empresa
         const registroExistente = await Clientes_Servicios_Empresa.findOne({
@@ -98,11 +100,25 @@ exports.crearClienteandServicios = async (req, res) => {
             },
         });
         if (registroExistente) {
-            // Si ya existe, suma el valor nuevo al valor existente
-            const nuevoPreciocontrat = parseFloat(registroExistente.preciocontrat) + parseFloat(preciocontrat);
+            console.log(registroExistente);
 
-            // Actualiza el valor de preciocontrat
-            await registroExistente.update({ preciocontrat: nuevoPreciocontrat });
+            // Si ya existe, suma el valor nuevo al valor existente
+            if (preciocontrat) {
+                const nuevoPreciocontrat = parseFloat(registroExistente.preciocontrat) + parseFloat(preciocontrat);
+
+                // Actualiza el valor de preciocontrat
+                await registroExistente.update({ preciocontrat: nuevoPreciocontrat });
+            }
+            if (nuevoComentario) {
+                console.log(registroExistente.comentarios);
+                //Actualiza el campo comentarios con un registro a mayores separado con ;
+                const comentariosActualizados = registroExistente.comentarios
+                    ? `${registroExistente.comentarios};${nuevoComentario}`
+                    : nuevoComentario;
+
+                registroExistente.comentarios = comentariosActualizados;
+                await registroExistente.save();
+            }
 
             res.status(200).send({
                 message: 'Registro existente actualizado con éxito'

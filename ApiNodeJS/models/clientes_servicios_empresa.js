@@ -20,6 +20,8 @@ module.exports = (sequelize, DataTypes) => {
     id_cliente: DataTypes.INTEGER,
     id_servicio_empresa: DataTypes.INTEGER,
     preciocontrat: DataTypes.DECIMAL(10, 2),
+    fechamodif: DataTypes.DATE,
+    comentarios: DataTypes.STRING(255)
   }, {
     sequelize,
     modelName: 'Clientes_Servicios_Empresa',
